@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Net;
 
@@ -39,7 +40,7 @@ namespace DigiSigner.Client
 
             return JsonConvert.DeserializeObject<Dictionary<string, string>>(
                 Encoding.ASCII.GetString(result)
-            )[Config.PARAM_DOC_ID];           
+            )[Config.PARAM_DOC_ID];
         }
 
         /// <summary>
@@ -51,18 +52,67 @@ namespace DigiSigner.Client
             HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(Config.getDeleteDocumentUrl(serverUrl, documentId));
 
             addAuthInfo(webRequest.Headers);
-            
+
             webRequest.Method = "Delete";
             webRequest.GetResponse();
         }
 
+        /// <summary>
+        /// Download the document by ID.
+        /// </summary>
+        /// <param name="documentId">ID of document.</param>
+        /// <param name="filename">the name of the document file to be saved.</param>
         public void getDocumentById(string documentId, string filename)
         {
             WebClient webClient = new WebClient();
 
             addAuthInfo(webClient.Headers);
 
-            webClient.DownloadFile(Config.getDocumentUrl(serverUrl)+"/"+documentId, filename);
+            webClient.DownloadFile(Config.getDocumentUrl(serverUrl) + "/" + documentId, filename);
+        }
+
+        public void addContentToDocument(string documentId, List<Signature> signatures)
+        {
+            HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(Config.getContentUrl(serverUrl, documentId));
+
+            addAuthInfo(webRequest.Headers);
+
+            webRequest.Method = "Post";
+            
+            string json = JsonConvert.SerializeObject(new DocumentContent(signatures), Formatting.Indented);
+            byte[] reqBody = Encoding.ASCII.GetBytes(json);
+
+            webRequest.ContentLength = reqBody.Length;
+            webRequest.ContentType = "application/json";
+
+            Stream dataStream = webRequest.GetRequestStream();
+
+            dataStream.Write(reqBody, 0, reqBody.Length);
+
+            dataStream.Close();
+
+            WebResponse response = webRequest.GetResponse();
+        }
+
+        public DocumentFields getDocumentFields(string documentId)
+        {
+            HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(Config.getFieldsUrl(serverUrl, documentId));
+
+            addAuthInfo(webRequest.Headers);
+
+            webRequest.Method = "Get";
+
+            WebResponse response = webRequest.GetResponse();
+
+            Stream stream = response.GetResponseStream();
+
+            byte[] buffer = new byte[response.ContentLength];
+            stream.Read(buffer, 0, buffer.Length);
+            stream.Close();
+
+            string json = Encoding.ASCII.GetString(buffer);
+
+            return JsonConvert.DeserializeObject<DocumentFields>(json);
         }
     }
 }
