@@ -71,6 +71,11 @@ namespace DigiSigner.Client
             webClient.DownloadFile(Config.getDocumentUrl(serverUrl) + "/" + documentId, filename);
         }
 
+        /// <summary>
+        /// Adds content to the document after given document ID.
+        /// </summary>
+        /// <param name="documentId">documentId to insert content.</param>
+        /// <param name="signatures">signatures will be rendered on the document.</param>
         public void addContentToDocument(string documentId, List<Signature> signatures)
         {
             HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(Config.getContentUrl(serverUrl, documentId));
@@ -94,6 +99,11 @@ namespace DigiSigner.Client
             WebResponse response = webRequest.GetResponse();
         }
 
+        /// <summary>
+        /// Returns document fields for a document.
+        /// </summary>
+        /// <param name="documentId">Id of the document.</param>
+        /// <returns>Document's fields</returns>
         public DocumentFields getDocumentFields(string documentId)
         {
             HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(Config.getFieldsUrl(serverUrl, documentId));
