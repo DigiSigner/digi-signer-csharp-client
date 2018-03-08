@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 using Xunit;
 
 using DigiSigner.Client;
@@ -24,7 +25,7 @@ namespace XUnitTestDigiSignerClient
         public void AddContentToDocument()
         {
             DigiSignerClient client = new DigiSignerClient("fba19cdd-a21c-46cc-90fc-28a77e2271a4");
-            string res = client.uploadDocument("../../../1.pdf");
+            string res = client.uploadDocument("../../../document.pdf");
 
             Signature signature1 = new Signature
             {
@@ -48,7 +49,466 @@ namespace XUnitTestDigiSignerClient
         public void GetFieldsFromDocument()
         {
             DigiSignerClient client = new DigiSignerClient("fba19cdd-a21c-46cc-90fc-28a77e2271a4");
-            DocumentFields fileds = client.getDocumentFields("18bc0e38-e4a4-4bbe-a5c0-07165a8f1516");
+            DocumentFields fileds = client.getDocumentFields("c0880b21-5c1d-4a15-87b0-1e61b832a5f6");
+        }
+
+        [Fact]
+        public void SendSignatureRequest()
+        {
+            // build signature request
+            SignatureRequest signatureRequest = new SignatureRequest();
+            signatureRequest.SendEmails = false;
+
+            // add document from file and one signer
+            Document document = new Document("../../../document.pdf");
+            document.Signers.Add(new Signer("signer_1@example.com"));
+            signatureRequest.Documents.Add(document);
+
+            // execute signature request
+            DigiSignerClient client = new DigiSignerClient("fba19cdd-a21c-46cc-90fc-28a77e2271a4");
+            SignatureRequest signatureRequestResponse = client.sendSignatureRequest(signatureRequest);
+
+            // validate signature request response
+            //validateResponse(signatureRequest, signatureRequestResponse, true);
+
+
+
+            // get and validate signature request from database
+            string signatureRequestId = signatureRequestResponse.SignatureRequestId;
+            SignatureRequest createdSignatureRequest = client.getSignatureRequest(signatureRequestId);
+
+            validateSignatureRequest(signatureRequest, createdSignatureRequest, true);
+        }
+
+        /*
+         * Tests send signature request.
+         * Curl example:
+         * {"documents" : [
+         * {"document_id": "06c4d320-d6c5-492b-b343-8482338ef9d0",
+         * "title": "Sample title",
+         * "subject": "Sample subject",
+         * "message": "Sample message",
+         * "signers": [*{"email": "signer_1@example.com"},{"email": "signer_2@example.com"}]}]}
+         */
+        [Fact]
+        public void testSendSignatureRequest()
+        {
+            // build signature request
+            SignatureRequest signatureRequest = new SignatureRequest();
+            signatureRequest.SendEmails = false;
+
+            // add document with possible attributes
+            Document document = new Document("../../../document.pdf");
+            document.Title = "Sample title";
+            document.Subject = "Sample subject";
+            document.Message = "Sample message";
+
+            Signer signer1 = new Signer("signer_1@example.com");
+            signer1.Order = 1;
+
+            Signer signer2 = new Signer("signer_2@example.com");
+            signer2.Order = 2;
+
+            document.Signers.Add(signer1);
+            document.Signers.Add(signer2);
+
+            signatureRequest.Documents.Add(document);
+
+            // execute signature request
+            DigiSignerClient client = new DigiSignerClient("fba19cdd-a21c-46cc-90fc-28a77e2271a4");
+            SignatureRequest signatureRequestResponse = client.sendSignatureRequest(signatureRequest);
+
+            // validate signature request response
+            validateResponse(signatureRequest, signatureRequestResponse, true);
+
+            // get and validate signature request from database
+            String signatureRequestId = signatureRequestResponse.SignatureRequestId;
+            SignatureRequest createdSignatureRequest = client.getSignatureRequest(signatureRequestId);
+
+            Assert.Equal(2, createdSignatureRequest.Documents[0].Signers.Count);
+            validateSignatureRequest(signatureRequest, createdSignatureRequest, true);
+        }
+
+        /*
+         * Test signature request for template with fields.
+         * Curl example:
+         * {"documents" : [{"document_id": "6586b79c-60a9-4986-a96d-2b8841cfb567",
+         * "signers": [{"email": "signer_1@example.com", "role": "Signer 1",
+         * "existing_fields": [
+         * {"api_id": "d9fbf81b-cfa1-47cd-bc3e-3980131af733", "content": "Sample content 1"},
+         * {"api_id": "00b25bcc-7909-4174-b18c-04ae2fb01775", "content": "Sample content 2"}
+         * ]}]}]}
+         */
+
+        [Fact]
+        public void testSendSignatureRequestWithExistingFields()
+        {
+            // build signature request
+            SignatureRequest signatureRequest = new SignatureRequest();
+            signatureRequest.SendEmails = false;
+
+            Document document = new Document("../../../document.pdf");
+            document.ID = "e2d19bca-28a5-4eb4-83e2-60603bd7bf11";
+            Signer signer = new Signer("signer_1@example.com");
+            signer.Role = "Signer 1";
+            // add fields
+            ExistingField field1 = new ExistingField("b7f9bf0d-c616-4d9c-897f-3682b62e8f7d");
+            field1.Content = "Sample content 1";
+            field1.Required = true;
+            signer.ExistingFields.Add(field1);
+
+            // add second field to signer
+            ExistingField field2 = new ExistingField("cc6a2a9c-54b4-43ac-9778-93192b2ab158");
+            field2.Content = "Sample content 2";
+            field2.Required = true;
+            signer.ExistingFields.Add(field2);
+
+            document.Signers.Add(signer);
+            signatureRequest.Documents.Add(document);
+
+            // execute signature request
+            DigiSignerClient client = new DigiSignerClient("fba19cdd-a21c-46cc-90fc-28a77e2271a4");
+            SignatureRequest signatureRequestResponse = client.sendSignatureRequest(signatureRequest);
+
+            // validate signature request response
+            validateResponse(signatureRequest, signatureRequestResponse, false);
+
+            // get and validate signature request from database
+            SignatureRequest createdSignatureRequest = client.getSignatureRequest(
+                    signatureRequestResponse.SignatureRequestId);
+            validateSignatureRequest(signatureRequest, createdSignatureRequest, false);
+
+            // get and validate fields from database
+            Document expectedDocument = signatureRequest.Documents[0];
+            DocumentFields documentFields = client.getDocumentFields(createdSignatureRequest.Documents[0].ID);
+            validateDocumentFields(expectedDocument, documentFields);
+        }
+
+        /*
+         * Test sending signature request for template.
+         * Curl example:
+         * {"documents" : [
+         * {"document_id": "6586b79c-60a9-4986-a96d-2b8841cfb567",
+         * "title": "Sample title", "subject": "Sample subject", "message": "Sample message",
+         * "signers": [{"email": "signer_1@example.com"},{"email": "signer_2@example.com"}]}]}
+         */
+         [Fact]
+         public void testSendSignatureRequestForTemplate()
+         {
+            // build signature request
+            SignatureRequest signatureRequest = new SignatureRequest();
+            signatureRequest.SendEmails = false;
+
+            Document document = new Document();
+            document.ID = "fb37a1c7-beb3-42dd-9d97-5733ef12a1ee";
+            document.Title = "Sample title";
+            document.Subject = "Sample subject";
+            document.Message = "Sample message";
+
+            Signer signer1 = new Signer("signer_1@example.com");
+            signer1.Order = 1;
+
+            Signer signer2 = new Signer("signer_2@example.com");
+            signer2.Order = 2;
+
+            document.Signers.Add(signer1);
+            document.Signers.Add(signer2);
+            signatureRequest.Documents.Add(document);
+
+            // execute signature request
+            DigiSignerClient client = new DigiSignerClient("fba19cdd-a21c-46cc-90fc-28a77e2271a4");
+            SignatureRequest signatureRequestResponse = client.sendSignatureRequest(signatureRequest);
+
+            // validate signature request response
+            validateResponse(signatureRequest, signatureRequestResponse, false);
+
+            // get and validate signature request from database
+            String signatureRequestId = signatureRequestResponse.SignatureRequestId;
+            SignatureRequest createdSignatureRequest = client.getSignatureRequest(signatureRequestId);
+
+            validateSignatureRequest(signatureRequest, createdSignatureRequest, false);
+        }
+
+        /*
+         * Test sending signature request with fields for template.
+         * Curl example:
+         * {"documents" : [
+         * {
+         *   "document_id": "79fbdbc7-dbac-424d-8e2e-507ea4ebb53f",
+         *   "title": "Sample title", 
+         *   "subject": "Sample subject", 
+         *   "message": "Sample message",
+         *   "signers": [
+         *     {
+         *       "email": "signer_1@example.com",
+         *       "role": "Employee",
+         *       "existing_fields": [
+         *          {
+         *            "api_id": "d9fbf81b-cfa1-47cd-bc3e-3980131af733", 
+         *            "content": "Sample content 1", 
+         *            "label": "Please sign",
+         *            "required": true, 
+         *            "read_only": false },
+         *          {
+         *            "api_id": "00b25bcc-7909-4174-b18c-04ae2fb01775", 
+         *            "content": "James Williams", 
+         *            "label": "Your name",
+         *            "required": true, 
+         *            "read_only": false 
+         *          }
+         *      ]},
+         *      {
+         *        "email": "signer_2@example.com", 
+         *        "role": "Manager", 
+         *        "existing_fields": [
+         *          {
+         *            "api_id": "b96211e4-08bc-4d6d-8498-30a991ff39f3", 
+         *            "content": "Mary Brown",
+         *            "label": "Please sign", 
+         *            "required": true, 
+         *            "read_only": false
+         *          },
+         *          {
+         *            "api_id": "5ac9c8c5-4f4d-4a1b-b2e1-4eb07f9f579f", 
+         *            "content": "Mary Brown", 
+         *            "label": "Your name",
+         *            "required": false, 
+         *            "read_only": false
+         *          }]}]}]}
+         */
+         [Fact]
+         public void testSendSignatureRequestWithExistingFieldsForTemplate()
+         {
+            // build signature request
+            SignatureRequest signatureRequest = new SignatureRequest();
+            signatureRequest.SendEmails = false;
+
+            Document document = new Document("../../../document.pdf");
+            document.ID = "c0880b21-5c1d-4a15-87b0-1e61b832a5f6";
+            document.Title = "Sample title";
+            document.Subject = "Sample subject";
+            document.Message = "Sample message";
+
+            // add first signer
+            Signer signer1 = new Signer("signer_1@example.com");
+            signer1.Role = "Employee";
+            signer1.Order = 1;
+
+            // add field for first signer
+            ExistingField field1 = new ExistingField("f2eb6940-1797-4fef-ae7d-39bb76cbb2a7");
+            field1.Content = "Sample content 1";
+            field1.Label = "Please sign";
+            field1.Required = true;
+            field1.ReadOnly = false;
+            signer1.ExistingFields.Add(field1);
+
+            // add second field to first signer
+            ExistingField field2 = new ExistingField("8e76a737-84ed-4cfa-959f-3500c7490de5");
+            field2.Content = "James Williams";
+            field2.Label = "Your name";
+            field2.Required = true;
+            field2.ReadOnly = false;
+            signer1.ExistingFields.Add(field2);
+
+            // add second signer
+            Signer signer2 = new Signer("signer_2@example.com");
+            signer2.Role = "Manager";
+            signer2.Order = 2;
+
+            // add field for second signer
+            ExistingField field3 = new ExistingField("585a5230-eb43-4574-b8cd-0300249041de");
+            field3.Content = "Mary Brown";
+            field3.Label = "Please sign";
+            field3.Required = true;
+            field3.ReadOnly = false;
+            signer2.ExistingFields.Add(field3);
+
+            // add second field to second signer
+            ExistingField field4 = new ExistingField("5fa4b24b-2775-4276-a1c5-8a6b0af58931");
+            field4.Content = "Mary Brown";
+            field4.Label = "Your name";
+            field4.Required = false;
+            field4.ReadOnly = false;
+            signer2.ExistingFields.Add(field4);
+
+            document.Signers.Add(signer1);
+            document.Signers.Add(signer2);
+            signatureRequest.Documents.Add(document);
+
+            // execute signature request
+            DigiSignerClient client = new DigiSignerClient("fba19cdd-a21c-46cc-90fc-28a77e2271a4");
+            SignatureRequest signatureRequestResponse = client.sendSignatureRequest(signatureRequest);
+
+            // validate signature request response
+            validateResponse(signatureRequest, signatureRequestResponse, false);
+
+            // get and validate signature request from database
+            SignatureRequest createdSignatureRequest = client.getSignatureRequest(
+                    signatureRequestResponse.SignatureRequestId);
+            validateSignatureRequest(signatureRequest, createdSignatureRequest, false);
+
+            // get and validate fields from database
+            Document expectedDocument = signatureRequest.Documents[0];
+            DocumentFields documentFields = client.getDocumentFields(createdSignatureRequest.Documents[0].ID);
+            validateDocumentFields(expectedDocument, documentFields);
+        }
+
+        private void validateDocumentFields(Document document, DocumentFields documentFields)
+        {
+            foreach (Signer signer in document.Signers)
+            {
+                foreach (Field field in signer.Fields)
+                {
+                    // assert that all fields from all signers in document (document.getSigners()) can be found
+                    // in documentFields.getDocumentFields()
+                    DocumentField documentField = findDocumentField(field.ApiId, documentFields);
+                    Assert.NotNull(documentField);
+                    // and all their attributes are equal
+                    Assert.Equal(field.Page, documentField.Page);
+                    Assert.Equal(field.Type, documentField.Type);
+                    Assert.Equal(field.Label, documentField.Label);
+                    Assert.Equal(field.Required, documentField.Required);
+                    Assert.Equal(field.Name, documentField.Name);
+                    Assert.Equal(field.ReadOnly, documentField.ReadOnly);
+                    Assert.Equal(field.Content, documentField.Content);
+                }
+
+                foreach (ExistingField field in signer.ExistingFields)
+                {
+                    DocumentField documentField = findDocumentField(field.ApiId, documentFields);
+                    Assert.NotNull(documentField);
+                    // and all their attributes are equal
+                    Assert.Equal(field.Label, documentField.Label);
+                    Assert.Equal(field.Required, documentField.Required);
+                    Assert.Equal(field.ReadOnly, documentField.ReadOnly);
+                    Assert.Equal(field.Content, documentField.Content);
+                }
+            }
+        }
+
+        private DocumentField findDocumentField(String apiId, DocumentFields documentFields)
+        {
+            foreach (DocumentField documentField in documentFields.Fileds)
+            {
+                if (documentField.apiId.Equals(apiId))
+                {
+                    return documentField;
+                }
+            }
+            return null;
+        }
+
+        private void validateResponse(SignatureRequest expected, SignatureRequest actual, bool isDocument)
+        {
+            int i = 0;
+            foreach (Document document in actual.Documents)
+            {
+
+                foreach (Signer signer in document.Signers)
+                {
+                    string signDocumentUrl = signer.SignDocumentUrl;
+                    Assert.NotNull(signDocumentUrl);
+                    // validate signDocumentUrl
+                    Regex regex = new Regex("(?=.*documentId=)(?=.*invitationId=).*$");
+                    Assert.Matches(regex, signDocumentUrl);
+
+                    // template has different ID for expected SignatureRequest.
+                    if (isDocument)
+                    {
+                        string expectedDocumentId = expected.Documents[i].ID;
+                        signDocumentUrl.Contains(expectedDocumentId);
+                    }
+                }
+                ++i;
+            }
+        }
+
+        private Signer getSignerByEmail(SignatureRequest signatureRequest, string email)
+        {
+            foreach (Document document in signatureRequest.Documents)
+            {
+                foreach (Signer signer in document.Signers)
+                {
+                    if (signer.Email.Equals(email))
+                    {
+                        return signer;
+                    }
+                }
+            }
+            return null;
+        }
+
+        protected void validateSignatureRequest(SignatureRequest expected, SignatureRequest actual, bool isDocument)
+        {
+
+            // assert all high level attributes are the same: "send_emails", "embedded" etc.
+            Assert.Equal<bool>(expected.SendEmails, actual.SendEmails);
+            Assert.Equal(expected.RedirectAfterSigningToUrl, actual.RedirectAfterSigningToUrl);
+            Assert.Equal(expected.RedirectForSigningToUrl, actual.RedirectForSigningToUrl);
+            Assert.Equal(expected.Embedded, actual.Embedded);
+            Assert.Equal(expected.UseTextTags, actual.UseTextTags);
+            Assert.Equal(expected.HideTextTags, actual.HideTextTags);
+            Assert.Equal(expected.Completed, actual.Completed);
+            
+            // iterate over documents and assert all their attributes are the same
+            for (int i = 0; i < expected.Documents.Count; ++i)
+            {
+                Document expectedDocument = expected.Documents[i];
+                Document actualDocument = actual.Documents[i];
+                // template has different ID for expected SignatureRequest.
+                if (isDocument)
+                {
+                    Assert.Equal(expectedDocument.ID, actualDocument.ID);
+                }
+                // check document title; if not set - generated
+                if (expectedDocument.Title == null)
+                {
+                    Assert.NotNull(actualDocument.Title);
+                }
+                else
+                {
+                    Assert.Equal(expectedDocument.Title, actualDocument.Title);
+                }
+
+                // check document subject and message; if not set - taken by default
+                if (expectedDocument.Subject == null)
+                {
+                    Assert.NotNull(actualDocument.Subject);
+                }
+                else
+                {
+                    Assert.Equal(expectedDocument.Subject, actualDocument.Subject);
+                }
+
+                if (expectedDocument.Message == null)
+                {
+                    Assert.NotNull(actualDocument.Subject);
+                }
+                else
+                {
+                    Assert.Equal(expectedDocument.Message, actualDocument.Message);
+                }
+
+                // for each document iterate over signers and assert all their attributes are the same
+                for (int s = 0; s < expectedDocument.Signers.Count; s++)
+                {
+                    Signer expectedSigner = expectedDocument.Signers[s];
+                    Signer actualSigner = getSignerByEmail(actual, expectedSigner.Email);
+
+                    Assert.Equal(expectedSigner.AccessCode, actualSigner.AccessCode);
+                    Assert.Equal(expectedSigner.Email, actualSigner.Email);
+                    Assert.Equal(expectedSigner.Order, actualSigner.Order);
+                    // validate if role defined for signer
+                    if (expectedSigner.Role != null)
+                    {
+                        Assert.Equal(expectedSigner.Role, actualSigner.Role);
+                    }
+                    // validate signDocumentUrl
+                    Assert.NotNull(actualSigner.SignDocumentUrl);
+                    Assert.Matches(new Regex("(?=.*documentId=)(?=.*invitationId=).*$"), actualSigner.SignDocumentUrl);
+                    Assert.Equal(expectedSigner.SignatureCompleted, actualSigner.SignatureCompleted);
+                }
+            }
         }
     }
 }

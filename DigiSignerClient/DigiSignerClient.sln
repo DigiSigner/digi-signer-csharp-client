@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigiSignerClient", "DigiSignerClient\DigiSignerClient.csproj", "{FDC667BE-91C9-4D3E-B9A1-1723D82CE2D4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DigiSignerClient", "DigiSignerClient\DigiSignerClient.csproj", "{FDC667BE-91C9-4D3E-B9A1-1723D82CE2D4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XUnitTestDigiSignerClient", "XUnitTestDigiSignerClient\XUnitTestDigiSignerClient.csproj", "{3E514145-1A7C-4946-ABF0-595F51F30E8F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "XUnitTestDigiSignerClient", "XUnitTestDigiSignerClient\XUnitTestDigiSignerClient.csproj", "{3E514145-1A7C-4946-ABF0-595F51F30E8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

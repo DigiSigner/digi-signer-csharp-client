@@ -32,15 +32,16 @@ namespace DigiSigner.Client
         /// <returns>ID of uploaded document.</returns>
         public string uploadDocument(string filename)
         {
-            WebClient webClient = new WebClient();
+            using (WebClient webClient = new WebClient())
+            {
+                addAuthInfo(webClient.Headers);
 
-            addAuthInfo(webClient.Headers);
+                byte[] result = webClient.UploadFile(Config.getDocumentUrl(serverUrl), filename);
 
-            byte[] result = webClient.UploadFile(Config.getDocumentUrl(serverUrl), filename);
-
-            return JsonConvert.DeserializeObject<Dictionary<string, string>>(
-                Encoding.ASCII.GetString(result)
-            )[Config.PARAM_DOC_ID];
+                return JsonConvert.DeserializeObject<Dictionary<string, string>>(
+                    Encoding.ASCII.GetString(result)
+                )[Config.PARAM_DOC_ID];
+            }
         }
 
         /// <summary>
@@ -64,11 +65,12 @@ namespace DigiSigner.Client
         /// <param name="filename">the name of the document file to be saved.</param>
         public void getDocumentById(string documentId, string filename)
         {
-            WebClient webClient = new WebClient();
+            using (WebClient webClient = new WebClient())
+            {
+                addAuthInfo(webClient.Headers);
 
-            addAuthInfo(webClient.Headers);
-
-            webClient.DownloadFile(Config.getDocumentUrl(serverUrl) + "/" + documentId, filename);
+                webClient.DownloadFile(Config.getDocumentUrl(serverUrl) + "/" + documentId, filename);
+            }
         }
 
         /// <summary>
@@ -83,18 +85,11 @@ namespace DigiSigner.Client
             addAuthInfo(webRequest.Headers);
 
             webRequest.Method = "Post";
-            
-            string json = JsonConvert.SerializeObject(new DocumentContent(signatures), Formatting.Indented);
-            byte[] reqBody = Encoding.ASCII.GetBytes(json);
-
-            webRequest.ContentLength = reqBody.Length;
-            webRequest.ContentType = "application/json";
-
-            Stream dataStream = webRequest.GetRequestStream();
-
-            dataStream.Write(reqBody, 0, reqBody.Length);
-
-            dataStream.Close();
+           
+            wrireBodyRequest(
+                webRequest,
+                JsonConvert.SerializeObject(new DocumentContent(signatures), Formatting.Indented)
+            );
 
             WebResponse response = webRequest.GetResponse();
         }
@@ -112,17 +107,80 @@ namespace DigiSigner.Client
 
             webRequest.Method = "Get";
 
-            WebResponse response = webRequest.GetResponse();
+            return readFieldsFromBody<DocumentFields>(
+                webRequest.GetResponse()
+            );
+        }
 
-            Stream stream = response.GetResponseStream();
+        public SignatureRequest getSignatureRequest(string signatureRequestId)
+        {
+            String url = Config.getSignatureRequestsUrl(serverUrl) + "/" + signatureRequestId;
 
-            byte[] buffer = new byte[response.ContentLength];
-            stream.Read(buffer, 0, buffer.Length);
-            stream.Close();
+            HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(url);
 
-            string json = Encoding.ASCII.GetString(buffer);
+            addAuthInfo(webRequest.Headers);
 
-            return JsonConvert.DeserializeObject<DocumentFields>(json);
+            webRequest.Method = "Get";
+
+            return readFieldsFromBody<SignatureRequest>(
+                webRequest.GetResponse()
+            );
+        }
+
+        public SignatureRequest sendSignatureRequest(SignatureRequest signatureRequest)
+        {
+            foreach (Document document in signatureRequest.Documents)
+            {
+                if (document.ID == null)
+                {
+                    document.ID = uploadDocument(document.FileName);
+                }
+            }
+
+            HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(Config.getSignatureRequestsUrl(serverUrl));
+
+            addAuthInfo(webRequest.Headers);
+
+            webRequest.Method = "Post";
+
+            wrireBodyRequest(
+                webRequest,
+                JsonConvert.SerializeObject(signatureRequest, Formatting.Indented)
+            );
+
+            return readFieldsFromBody<SignatureRequest>(
+                webRequest.GetResponse()
+            );
+        }
+
+        private void wrireBodyRequest(HttpWebRequest request, string json)
+        {
+            byte[] buffer = Encoding.ASCII.GetBytes(json);
+
+            request.ContentLength = buffer.Length;
+            request.ContentType = "application/json";
+
+            using (Stream dataStream = request.GetRequestStream())
+            {
+                dataStream.Write(buffer, 0, buffer.Length);
+                dataStream.Flush();
+
+                dataStream.Close();
+            }
+        }
+
+        private T readFieldsFromBody<T>(WebResponse response)
+        {
+            using (Stream stream = response.GetResponseStream())
+            {
+                byte[] buffer = new byte[response.ContentLength];
+                stream.Read(buffer, 0, buffer.Length);
+                stream.Close();
+
+                string json = Encoding.ASCII.GetString(buffer);
+
+                return JsonConvert.DeserializeObject<T>(json);
+            }
         }
     }
 }

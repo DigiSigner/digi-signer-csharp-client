@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 
 namespace DigiSigner.Client
 {
+    [JsonObject(ItemNullValueHandling = NullValueHandling.Ignore)]
     public class Signature
     {
         public Signature()

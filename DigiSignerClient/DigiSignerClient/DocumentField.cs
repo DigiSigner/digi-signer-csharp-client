@@ -33,13 +33,13 @@ namespace DigiSigner.Client
         }
 
         [JsonProperty("page")]
-        public int page  // starts with 0
+        public int Page  // starts with 0
         {
             get; set;
         }
 
         [JsonProperty("rectangle")]
-        public int[] rectangle
+        public int[] Rectangle
         {
             get; set;
         }
@@ -51,16 +51,16 @@ namespace DigiSigner.Client
         }
 
         [JsonProperty("content")]
-        public String content;
+        public string Content;
 
         [JsonProperty("submitted_content")]
-        public String submittedContent
+        public string SubmittedContent
         {
             get; set;
         }
 
         [JsonProperty("label")]
-        public String Label
+        public string Label
         {
             get; set;
         }
@@ -72,7 +72,7 @@ namespace DigiSigner.Client
         }
 
         [JsonProperty("name")]
-        public String Name
+        public string Name
         {
             get; set;
         }
