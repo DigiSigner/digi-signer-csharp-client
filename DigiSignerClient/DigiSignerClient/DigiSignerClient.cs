@@ -112,6 +112,12 @@ namespace DigiSigner.Client
             );
         }
 
+        /// <summary>
+        /// The get signature request to check information about signature such as signature is completed
+        /// and IDs of signature request and documents.
+        /// </summary>
+        /// <param name="signatureRequestId">ID of the signature request.</param>
+        /// <returns>SignatureRequest with filled IDs and signature request data.</returns>
         public SignatureRequest getSignatureRequest(string signatureRequestId)
         {
             String url = Config.getSignatureRequestsUrl(serverUrl) + "/" + signatureRequestId;
@@ -127,6 +133,11 @@ namespace DigiSigner.Client
             );
         }
 
+        /// <summary>
+        /// Sends the signature request to the server.
+        /// </summary>
+        /// <param name="signatureRequest">signatureRequest filled signature request with required data.</param>
+        /// <returns>result with sent signature request ID.</returns>
         public SignatureRequest sendSignatureRequest(SignatureRequest signatureRequest)
         {
             foreach (Document document in signatureRequest.Documents)
