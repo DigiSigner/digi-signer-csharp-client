@@ -11,21 +11,21 @@ namespace XUnitTestDigiSignerClient
     public class DigiSignerClientTests
     {
         [Fact]
-        public void UploadDocument()
+        public void UploadDocumentTest()
         {
             DigiSignerClient client = new DigiSignerClient("fba19cdd-a21c-46cc-90fc-28a77e2271a4");
-            string res = client.uploadDocument("../../../1.pdf");
+            string res = client.UploadDocument("../../../1.pdf");
 
-            client.getDocumentById(res, "../../../2.pdf");
+            client.GetDocumentById(res, "../../../2.pdf");
 
-            client.deleteDocument(res);
+            client.DeleteDocument(res);
         }
 
         [Fact]
-        public void AddContentToDocument()
+        public void AddContentToDocumentTest()
         {
             DigiSignerClient client = new DigiSignerClient("fba19cdd-a21c-46cc-90fc-28a77e2271a4");
-            string res = client.uploadDocument("../../../document.pdf");
+            string res = client.UploadDocument("../../../document.pdf");
 
             Signature signature1 = new Signature
             {
@@ -42,18 +42,18 @@ namespace XUnitTestDigiSignerClient
             };
 
             // add signatures to document
-            client.addContentToDocument(res, signatures);
+            client.AddContentToDocument(res, signatures);
         }
 
         [Fact]
-        public void GetFieldsFromDocument()
+        public void GetFieldsFromDocumentTest()
         {
             DigiSignerClient client = new DigiSignerClient("fba19cdd-a21c-46cc-90fc-28a77e2271a4");
-            DocumentFields fileds = client.getDocumentFields("c0880b21-5c1d-4a15-87b0-1e61b832a5f6");
+            DocumentFields fileds = client.GetDocumentFields("c0880b21-5c1d-4a15-87b0-1e61b832a5f6");
         }
 
         [Fact]
-        public void SendSignatureRequest()
+        public void SendSimpleSignatureRequestTest()
         {
             // build signature request
             SignatureRequest signatureRequest = new SignatureRequest();
@@ -66,7 +66,7 @@ namespace XUnitTestDigiSignerClient
 
             // execute signature request
             DigiSignerClient client = new DigiSignerClient("fba19cdd-a21c-46cc-90fc-28a77e2271a4");
-            SignatureRequest signatureRequestResponse = client.sendSignatureRequest(signatureRequest);
+            SignatureRequest signatureRequestResponse = client.SendSignatureRequest(signatureRequest);
 
             // validate signature request response
             //validateResponse(signatureRequest, signatureRequestResponse, true);
@@ -75,9 +75,9 @@ namespace XUnitTestDigiSignerClient
 
             // get and validate signature request from database
             string signatureRequestId = signatureRequestResponse.SignatureRequestId;
-            SignatureRequest createdSignatureRequest = client.getSignatureRequest(signatureRequestId);
+            SignatureRequest createdSignatureRequest = client.GetSignatureRequest(signatureRequestId);
 
-            validateSignatureRequest(signatureRequest, createdSignatureRequest, true);
+            ValidateSignatureRequest(signatureRequest, createdSignatureRequest, true);
         }
 
         /*
@@ -91,7 +91,7 @@ namespace XUnitTestDigiSignerClient
          * "signers": [*{"email": "signer_1@example.com"},{"email": "signer_2@example.com"}]}]}
          */
         [Fact]
-        public void testSendSignatureRequest()
+        public void SendSignatureRequestTest()
         {
             // build signature request
             SignatureRequest signatureRequest = new SignatureRequest();
@@ -116,17 +116,17 @@ namespace XUnitTestDigiSignerClient
 
             // execute signature request
             DigiSignerClient client = new DigiSignerClient("fba19cdd-a21c-46cc-90fc-28a77e2271a4");
-            SignatureRequest signatureRequestResponse = client.sendSignatureRequest(signatureRequest);
+            SignatureRequest signatureRequestResponse = client.SendSignatureRequest(signatureRequest);
 
             // validate signature request response
-            validateResponse(signatureRequest, signatureRequestResponse, true);
+            ValidateResponse(signatureRequest, signatureRequestResponse, true);
 
             // get and validate signature request from database
             String signatureRequestId = signatureRequestResponse.SignatureRequestId;
-            SignatureRequest createdSignatureRequest = client.getSignatureRequest(signatureRequestId);
+            SignatureRequest createdSignatureRequest = client.GetSignatureRequest(signatureRequestId);
 
             Assert.Equal(2, createdSignatureRequest.Documents[0].Signers.Count);
-            validateSignatureRequest(signatureRequest, createdSignatureRequest, true);
+            ValidateSignatureRequest(signatureRequest, createdSignatureRequest, true);
         }
 
         /*
@@ -139,9 +139,8 @@ namespace XUnitTestDigiSignerClient
          * {"api_id": "00b25bcc-7909-4174-b18c-04ae2fb01775", "content": "Sample content 2"}
          * ]}]}]}
          */
-
         [Fact]
-        public void testSendSignatureRequestWithExistingFields()
+        public void SendSignatureRequestWithExistingFieldsTest()
         {
             // build signature request
             SignatureRequest signatureRequest = new SignatureRequest();
@@ -168,20 +167,20 @@ namespace XUnitTestDigiSignerClient
 
             // execute signature request
             DigiSignerClient client = new DigiSignerClient("fba19cdd-a21c-46cc-90fc-28a77e2271a4");
-            SignatureRequest signatureRequestResponse = client.sendSignatureRequest(signatureRequest);
+            SignatureRequest signatureRequestResponse = client.SendSignatureRequest(signatureRequest);
 
             // validate signature request response
-            validateResponse(signatureRequest, signatureRequestResponse, false);
+            ValidateResponse(signatureRequest, signatureRequestResponse, false);
 
             // get and validate signature request from database
-            SignatureRequest createdSignatureRequest = client.getSignatureRequest(
+            SignatureRequest createdSignatureRequest = client.GetSignatureRequest(
                     signatureRequestResponse.SignatureRequestId);
-            validateSignatureRequest(signatureRequest, createdSignatureRequest, false);
+            ValidateSignatureRequest(signatureRequest, createdSignatureRequest, false);
 
             // get and validate fields from database
             Document expectedDocument = signatureRequest.Documents[0];
-            DocumentFields documentFields = client.getDocumentFields(createdSignatureRequest.Documents[0].ID);
-            validateDocumentFields(expectedDocument, documentFields);
+            DocumentFields documentFields = client.GetDocumentFields(createdSignatureRequest.Documents[0].ID);
+            ValidateDocumentFields(expectedDocument, documentFields);
         }
 
         /*
@@ -193,7 +192,7 @@ namespace XUnitTestDigiSignerClient
          * "signers": [{"email": "signer_1@example.com"},{"email": "signer_2@example.com"}]}]}
          */
          [Fact]
-         public void testSendSignatureRequestForTemplate()
+         public void SendSignatureRequestForTemplateTest()
          {
             // build signature request
             SignatureRequest signatureRequest = new SignatureRequest();
@@ -217,16 +216,16 @@ namespace XUnitTestDigiSignerClient
 
             // execute signature request
             DigiSignerClient client = new DigiSignerClient("fba19cdd-a21c-46cc-90fc-28a77e2271a4");
-            SignatureRequest signatureRequestResponse = client.sendSignatureRequest(signatureRequest);
+            SignatureRequest signatureRequestResponse = client.SendSignatureRequest(signatureRequest);
 
             // validate signature request response
-            validateResponse(signatureRequest, signatureRequestResponse, false);
+            ValidateResponse(signatureRequest, signatureRequestResponse, false);
 
             // get and validate signature request from database
             String signatureRequestId = signatureRequestResponse.SignatureRequestId;
-            SignatureRequest createdSignatureRequest = client.getSignatureRequest(signatureRequestId);
+            SignatureRequest createdSignatureRequest = client.GetSignatureRequest(signatureRequestId);
 
-            validateSignatureRequest(signatureRequest, createdSignatureRequest, false);
+            ValidateSignatureRequest(signatureRequest, createdSignatureRequest, false);
         }
 
         /*
@@ -277,7 +276,7 @@ namespace XUnitTestDigiSignerClient
          *          }]}]}]}
          */
          [Fact]
-         public void testSendSignatureRequestWithExistingFieldsForTemplate()
+         public void SendSignatureRequestWithExistingFieldsForTemplateTest()
          {
             // build signature request
             SignatureRequest signatureRequest = new SignatureRequest();
@@ -337,23 +336,23 @@ namespace XUnitTestDigiSignerClient
 
             // execute signature request
             DigiSignerClient client = new DigiSignerClient("fba19cdd-a21c-46cc-90fc-28a77e2271a4");
-            SignatureRequest signatureRequestResponse = client.sendSignatureRequest(signatureRequest);
+            SignatureRequest signatureRequestResponse = client.SendSignatureRequest(signatureRequest);
 
             // validate signature request response
-            validateResponse(signatureRequest, signatureRequestResponse, false);
+            ValidateResponse(signatureRequest, signatureRequestResponse, false);
 
             // get and validate signature request from database
-            SignatureRequest createdSignatureRequest = client.getSignatureRequest(
+            SignatureRequest createdSignatureRequest = client.GetSignatureRequest(
                     signatureRequestResponse.SignatureRequestId);
-            validateSignatureRequest(signatureRequest, createdSignatureRequest, false);
+            ValidateSignatureRequest(signatureRequest, createdSignatureRequest, false);
 
             // get and validate fields from database
             Document expectedDocument = signatureRequest.Documents[0];
-            DocumentFields documentFields = client.getDocumentFields(createdSignatureRequest.Documents[0].ID);
-            validateDocumentFields(expectedDocument, documentFields);
+            DocumentFields documentFields = client.GetDocumentFields(createdSignatureRequest.Documents[0].ID);
+            ValidateDocumentFields(expectedDocument, documentFields);
         }
 
-        private void validateDocumentFields(Document document, DocumentFields documentFields)
+        private void ValidateDocumentFields(Document document, DocumentFields documentFields)
         {
             foreach (Signer signer in document.Signers)
             {
@@ -361,7 +360,7 @@ namespace XUnitTestDigiSignerClient
                 {
                     // assert that all fields from all signers in document (document.getSigners()) can be found
                     // in documentFields.getDocumentFields()
-                    DocumentField documentField = findDocumentField(field.ApiId, documentFields);
+                    DocumentField documentField = FindDocumentField(field.ApiId, documentFields);
                     Assert.NotNull(documentField);
                     // and all their attributes are equal
                     Assert.Equal(field.Page, documentField.Page);
@@ -375,7 +374,7 @@ namespace XUnitTestDigiSignerClient
 
                 foreach (ExistingField field in signer.ExistingFields)
                 {
-                    DocumentField documentField = findDocumentField(field.ApiId, documentFields);
+                    DocumentField documentField = FindDocumentField(field.ApiId, documentFields);
                     Assert.NotNull(documentField);
                     // and all their attributes are equal
                     Assert.Equal(field.Label, documentField.Label);
@@ -386,7 +385,7 @@ namespace XUnitTestDigiSignerClient
             }
         }
 
-        private DocumentField findDocumentField(String apiId, DocumentFields documentFields)
+        private DocumentField FindDocumentField(String apiId, DocumentFields documentFields)
         {
             foreach (DocumentField documentField in documentFields.Fileds)
             {
@@ -398,7 +397,7 @@ namespace XUnitTestDigiSignerClient
             return null;
         }
 
-        private void validateResponse(SignatureRequest expected, SignatureRequest actual, bool isDocument)
+        private void ValidateResponse(SignatureRequest expected, SignatureRequest actual, bool isDocument)
         {
             int i = 0;
             foreach (Document document in actual.Documents)
@@ -423,7 +422,7 @@ namespace XUnitTestDigiSignerClient
             }
         }
 
-        private Signer getSignerByEmail(SignatureRequest signatureRequest, string email)
+        private Signer GetSignerByEmail(SignatureRequest signatureRequest, string email)
         {
             foreach (Document document in signatureRequest.Documents)
             {
@@ -438,7 +437,7 @@ namespace XUnitTestDigiSignerClient
             return null;
         }
 
-        protected void validateSignatureRequest(SignatureRequest expected, SignatureRequest actual, bool isDocument)
+        protected void ValidateSignatureRequest(SignatureRequest expected, SignatureRequest actual, bool isDocument)
         {
 
             // assert all high level attributes are the same: "send_emails", "embedded" etc.
@@ -493,7 +492,7 @@ namespace XUnitTestDigiSignerClient
                 for (int s = 0; s < expectedDocument.Signers.Count; s++)
                 {
                     Signer expectedSigner = expectedDocument.Signers[s];
-                    Signer actualSigner = getSignerByEmail(actual, expectedSigner.Email);
+                    Signer actualSigner = GetSignerByEmail(actual, expectedSigner.Email);
 
                     Assert.Equal(expectedSigner.AccessCode, actualSigner.AccessCode);
                     Assert.Equal(expectedSigner.Email, actualSigner.Email);

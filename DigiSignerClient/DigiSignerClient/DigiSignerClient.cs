@@ -1,10 +1,9 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Net;
-
-using Newtonsoft.Json;
+using System.Text;
 
 namespace DigiSigner.Client
 {
@@ -19,7 +18,7 @@ namespace DigiSigner.Client
             serverUrl = Config.DEFAULT_SERVER_URL;
         }
 
-        private void addAuthInfo(WebHeaderCollection headers)
+        private void AddAuthInfo(WebHeaderCollection headers)
         {
             string credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(apiKey + ":"));
             headers[HttpRequestHeader.Authorization] = "Basic " + credentials;
@@ -30,11 +29,11 @@ namespace DigiSigner.Client
         /// </summary>
         /// <param name="document">document to upload.</param>
         /// <returns>ID of uploaded document.</returns>
-        public string uploadDocument(string filename)
+        public string UploadDocument(string filename)
         {
             using (WebClient webClient = new WebClient())
             {
-                addAuthInfo(webClient.Headers);
+                AddAuthInfo(webClient.Headers);
 
                 byte[] result = webClient.UploadFile(Config.getDocumentUrl(serverUrl), filename);
 
@@ -48,11 +47,11 @@ namespace DigiSigner.Client
         /// Deletes document by document ID.
         /// </summary>
         /// <param name="documentId">ID of deleteded document.</param>
-        public void deleteDocument(string documentId)
+        public void DeleteDocument(string documentId)
         {
             HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(Config.getDeleteDocumentUrl(serverUrl, documentId));
 
-            addAuthInfo(webRequest.Headers);
+            AddAuthInfo(webRequest.Headers);
 
             webRequest.Method = "Delete";
             webRequest.GetResponse();
@@ -63,11 +62,11 @@ namespace DigiSigner.Client
         /// </summary>
         /// <param name="documentId">ID of document.</param>
         /// <param name="filename">the name of the document file to be saved.</param>
-        public void getDocumentById(string documentId, string filename)
+        public void GetDocumentById(string documentId, string filename)
         {
             using (WebClient webClient = new WebClient())
             {
-                addAuthInfo(webClient.Headers);
+                AddAuthInfo(webClient.Headers);
 
                 webClient.DownloadFile(Config.getDocumentUrl(serverUrl) + "/" + documentId, filename);
             }
@@ -78,15 +77,15 @@ namespace DigiSigner.Client
         /// </summary>
         /// <param name="documentId">documentId to insert content.</param>
         /// <param name="signatures">signatures will be rendered on the document.</param>
-        public void addContentToDocument(string documentId, List<Signature> signatures)
+        public void AddContentToDocument(string documentId, List<Signature> signatures)
         {
             HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(Config.getContentUrl(serverUrl, documentId));
 
-            addAuthInfo(webRequest.Headers);
+            AddAuthInfo(webRequest.Headers);
 
             webRequest.Method = "Post";
            
-            wrireBodyRequest(
+            WrireBodyRequest(
                 webRequest,
                 JsonConvert.SerializeObject(new DocumentContent(signatures), Formatting.Indented)
             );
@@ -99,11 +98,11 @@ namespace DigiSigner.Client
         /// </summary>
         /// <param name="documentId">Id of the document.</param>
         /// <returns>Document's fields</returns>
-        public DocumentFields getDocumentFields(string documentId)
+        public DocumentFields GetDocumentFields(string documentId)
         {
             HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(Config.getFieldsUrl(serverUrl, documentId));
 
-            addAuthInfo(webRequest.Headers);
+            AddAuthInfo(webRequest.Headers);
 
             webRequest.Method = "Get";
 
@@ -118,13 +117,13 @@ namespace DigiSigner.Client
         /// </summary>
         /// <param name="signatureRequestId">ID of the signature request.</param>
         /// <returns>SignatureRequest with filled IDs and signature request data.</returns>
-        public SignatureRequest getSignatureRequest(string signatureRequestId)
+        public SignatureRequest GetSignatureRequest(string signatureRequestId)
         {
             String url = Config.getSignatureRequestsUrl(serverUrl) + "/" + signatureRequestId;
 
             HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(url);
 
-            addAuthInfo(webRequest.Headers);
+            AddAuthInfo(webRequest.Headers);
 
             webRequest.Method = "Get";
 
@@ -138,23 +137,23 @@ namespace DigiSigner.Client
         /// </summary>
         /// <param name="signatureRequest">signatureRequest filled signature request with required data.</param>
         /// <returns>result with sent signature request ID.</returns>
-        public SignatureRequest sendSignatureRequest(SignatureRequest signatureRequest)
+        public SignatureRequest SendSignatureRequest(SignatureRequest signatureRequest)
         {
             foreach (Document document in signatureRequest.Documents)
             {
                 if (document.ID == null)
                 {
-                    document.ID = uploadDocument(document.FileName);
+                    document.ID = UploadDocument(document.FileName);
                 }
             }
 
             HttpWebRequest webRequest = (HttpWebRequest)WebRequest.Create(Config.getSignatureRequestsUrl(serverUrl));
 
-            addAuthInfo(webRequest.Headers);
+            AddAuthInfo(webRequest.Headers);
 
             webRequest.Method = "Post";
 
-            wrireBodyRequest(
+            WrireBodyRequest(
                 webRequest,
                 JsonConvert.SerializeObject(signatureRequest, Formatting.Indented)
             );
@@ -164,7 +163,7 @@ namespace DigiSigner.Client
             );
         }
 
-        private void wrireBodyRequest(HttpWebRequest request, string json)
+        private void WrireBodyRequest(HttpWebRequest request, string json)
         {
             byte[] buffer = Encoding.ASCII.GetBytes(json);
 

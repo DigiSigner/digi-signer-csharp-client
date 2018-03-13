@@ -1,9 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
-
-using Newtonsoft.Json;
 
 namespace DigiSigner.Client
 {
