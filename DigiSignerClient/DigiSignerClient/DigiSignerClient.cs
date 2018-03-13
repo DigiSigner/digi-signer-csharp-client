@@ -106,7 +106,7 @@ namespace DigiSigner.Client
 
             webRequest.Method = "Get";
 
-            return readFieldsFromBody<DocumentFields>(
+            return ReadFieldsFromBody<DocumentFields>(
                 webRequest.GetResponse()
             );
         }
@@ -127,7 +127,7 @@ namespace DigiSigner.Client
 
             webRequest.Method = "Get";
 
-            return readFieldsFromBody<SignatureRequest>(
+            return ReadFieldsFromBody<SignatureRequest>(
                 webRequest.GetResponse()
             );
         }
@@ -158,7 +158,7 @@ namespace DigiSigner.Client
                 JsonConvert.SerializeObject(signatureRequest, Formatting.Indented)
             );
 
-            return readFieldsFromBody<SignatureRequest>(
+            return ReadFieldsFromBody<SignatureRequest>(
                 webRequest.GetResponse()
             );
         }
@@ -179,7 +179,7 @@ namespace DigiSigner.Client
             }
         }
 
-        private T readFieldsFromBody<T>(WebResponse response)
+        private T ReadFieldsFromBody<T>(WebResponse response)
         {
             using (Stream stream = response.GetResponseStream())
             {
