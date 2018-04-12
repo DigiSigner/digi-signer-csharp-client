@@ -112,12 +112,12 @@ namespace DigiSigner.Client.Tests
          * "signers": [*{"email": "signer_1@example.com"},{"email": "signer_2@example.com"}]}]}
          */
         [Fact]
-        public void SendSignatureRequestTest()
+        public void SendSignatureRequestTestAsBundle()
         {
             // build signature request
             SignatureRequest signatureRequest = new SignatureRequest();
             signatureRequest.SendEmails = false;
-            signatureRequest.SendDocumentsAsBundle(true);
+            signatureRequest.SendDocumentsAsBundle = true;
             signatureRequest.BundleTitle = "Bundle title";
             signatureRequest.BundleSubject = "My subject";
             signatureRequest.BundleMessage = "My message";
