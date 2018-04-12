@@ -11,10 +11,14 @@ namespace DigiSigner.Client.Tests
         protected const string apiId = "fba19cdd-a21c-46cc-90fc-28a77e2271a4";
         protected const string relativePathToFileOfTheDocument = "../../../document.pdf";
         protected const string relativePathToDownloadDocument = "../../../2.pdf";
+        protected const string relativePathToFileOfAttachment = "../../../file.pdf";
 
         protected const string idOfTheDocumentWithFileds = "c0880b21-5c1d-4a15-87b0-1e61b832a5f6";
         protected const string idOfTheDocumentWithExisitingFileds = "e2d19bca-28a5-4eb4-83e2-60603bd7bf11";
         protected const string idOfTheTemplate = "fb37a1c7-beb3-42dd-9d97-5733ef12a1ee";
+
+        protected const string idDocumentWithAttachment = "YOUR_DOCUMENT_ID_WITH_ATTACHMENT_FIELD";
+        protected const string idApiFieldWithAttachment = "YOUR_API_ID_FIELD_WITH_ATTACHMENT";
 
         protected Dictionary<string, string> documentValues = new Dictionary<string, string>
         {

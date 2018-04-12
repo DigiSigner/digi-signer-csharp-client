@@ -49,5 +49,12 @@ namespace DigiSigner.Client.Tests
             DigiSignerClient client = new DigiSignerClient(apiId);
             DocumentFields fileds = client.GetDocumentFields(idOfTheDocumentWithFileds);
         }
+        
+        [Fact]
+        public void GetDocumentAttachmentTest()
+        {
+            DigiSignerClient client = new DigiSignerClient(apiId);
+            client.GetDocumentAttachment(idDocumentWithAttachment, idApiFieldWithAttachment, relativePathToFileOfAttachment);
+        }
     }
 }
