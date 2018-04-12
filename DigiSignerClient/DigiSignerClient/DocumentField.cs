@@ -74,6 +74,12 @@ namespace DigiSigner.Client
             get; set;
         }
 
+        [JsonProperty("group_id")]
+        public string GroupId
+        {
+            get; set;
+        }
+        
         [JsonProperty("index")]
         public int Index  // relevant only for check boxes
         {

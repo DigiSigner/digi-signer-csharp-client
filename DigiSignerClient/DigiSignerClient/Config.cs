@@ -9,6 +9,8 @@
         private const string SIGNATURE_REQUESTS_URL = "/signature_requests";
         private const string FIELDS_URL = "/fields";
         private const string CONTENT_URL = "/content";
+        private const string ATTACHMENT_URL = "/attachment";
+        private const string SLASH = "/";
 
         public const string PARAM_DOC_ID = "document_id";
 
@@ -23,12 +25,12 @@
 
         public static string getFieldsUrl(string server, string documentId)
         {
-          return getDocumentUrl(server) + "/" + documentId + FIELDS_URL;
+          return getDocumentUrl(server) + SLASH + documentId + FIELDS_URL;
         }
 
         public static string getContentUrl(string server, string documentId)
         {
-          return getDocumentUrl(server) + "/" + documentId + CONTENT_URL;
+          return getDocumentUrl(server) + SLASH + documentId + CONTENT_URL;
         }
 
         public static string getSignatureRequestsUrl(string server)
@@ -38,7 +40,7 @@
 
         public static string getDeleteDocumentUrl(string server, string documentId)
         {
-          return getDocumentUrl(server) + "/" + documentId;
+          return getDocumentUrl(server) + SLASH + documentId;
         }
     }
 }

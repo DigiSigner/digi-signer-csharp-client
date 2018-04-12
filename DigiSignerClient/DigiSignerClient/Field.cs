@@ -25,8 +25,8 @@ namespace DigiSigner.Client
             get; set;
         }
 
-        [JsonProperty("name")]
-        public string Name
+        [JsonProperty("group_id")]
+        public string GroupId
         {
             get; set;
         }

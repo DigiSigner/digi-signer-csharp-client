@@ -120,7 +120,7 @@ namespace DigiSigner.Client.Tests
                     Assert.Equal(field.Type, documentField.Type);
                     Assert.Equal(field.Label, documentField.Label);
                     Assert.Equal(field.Required, documentField.Required);
-                    Assert.Equal(field.Name, documentField.Name);
+                    Assert.Equal(field.GroupId, documentField.GroupId);
                     Assert.Equal(field.ReadOnly, documentField.ReadOnly);
                     Assert.Equal(field.Content, documentField.Content);
                 }
