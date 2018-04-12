@@ -10,6 +10,7 @@ namespace DigiSigner.Client
         {
             UseTextTags = false;
             HideTextTags = false;
+            SendDocumentsAsBundle = false;
             Documents = new List<Document>();
         }
 
@@ -60,7 +61,31 @@ namespace DigiSigner.Client
         {
             get; set;
         }
-
+        
+        [JsonProperty("send_documents_as_bundle")]
+        public bool SendDocumentsAsBundle
+        {
+            get; set;
+        }
+        
+        [JsonProperty("bundle_title")]
+        public string BundleTitle
+        {
+            get; set;
+        }
+        
+        [JsonProperty("bundle_subject")]
+        public string BundleSubject
+        {
+            get; set;
+        }
+        
+        [JsonProperty("bundle_message")]
+        public string BundleMessage
+        {
+            get; set;
+        }
+        
         [JsonProperty("is_completed")]
         public bool Completed
         {

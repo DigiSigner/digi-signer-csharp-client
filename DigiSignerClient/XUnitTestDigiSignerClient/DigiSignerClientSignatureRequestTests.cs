@@ -96,6 +96,60 @@ namespace DigiSigner.Client.Tests
             Assert.Equal(2, createdSignatureRequest.Documents[0].Signers.Count);
             ValidateSignatureRequest(signatureRequest, createdSignatureRequest, true);
         }
+        
+        
+        /*
+         * Tests send signature request as bundle.
+         * Curl example:
+         * {
+         * {"send_documents_as_bundle": true,
+         * "bundle_title": "Bundle title",
+         * "bundle_subject": "My subject",
+         * "bundle_message": "My message",
+         *
+         * "documents" : [
+         * {"document_id": "06c4d320-d6c5-492b-b343-8482338ef9d0",
+         * "signers": [*{"email": "signer_1@example.com"},{"email": "signer_2@example.com"}]}]}
+         */
+        [Fact]
+        public void SendSignatureRequestTest()
+        {
+            // build signature request
+            SignatureRequest signatureRequest = new SignatureRequest();
+            signatureRequest.SendEmails = false;
+            signatureRequest.SendDocumentsAsBundle(true);
+            signatureRequest.BundleTitle = "Bundle title";
+            signatureRequest.BundleSubject = "My subject";
+            signatureRequest.BundleMessage = "My message";
+
+            // add document with possible attributes
+            Document document = new Document(relativePathToFileOfTheDocument);
+
+            Signer signer1 = new Signer(signers["signer1"]["email"]);
+            signer1.Order = 1;
+
+            Signer signer2 = new Signer(signers["signer2"]["email"]);
+            signer2.Order = 2;
+
+            document.Signers.Add(signer1);
+            document.Signers.Add(signer2);
+
+            signatureRequest.Documents.Add(document);
+
+            // execute signature request
+            DigiSignerClient client = new DigiSignerClient(apiId);
+            SignatureRequest signatureRequestResponse = client.SendSignatureRequest(signatureRequest);
+
+            // validate signature request response
+            ValidateResponse(signatureRequest, signatureRequestResponse, false);
+
+            // get and validate signature request from database
+            String signatureRequestId = signatureRequestResponse.SignatureRequestId;
+            SignatureRequest createdSignatureRequest = client.GetSignatureRequest(signatureRequestId);
+
+            Assert.Equal(2, createdSignatureRequest.Documents[0].Signers.Count);
+            ValidateSignatureRequest(signatureRequest, createdSignatureRequest, false);
+        }
 
         /*
          * Test signature request for template with fields.
