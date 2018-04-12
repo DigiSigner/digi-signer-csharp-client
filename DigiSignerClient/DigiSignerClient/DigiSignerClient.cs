@@ -192,5 +192,21 @@ namespace DigiSigner.Client
                 return JsonConvert.DeserializeObject<T>(json);
             }
         }
+        
+        /// <summary>
+        /// Download the document attachment by ID of document and API ID of field.
+        /// </summary>
+        /// <param name="documentId">ID of document.</param>
+        /// <param name="fieldApiId">ID of document.</param>
+        /// <param name="filename">the name of the file to be saved.</param>
+        public void GetDocumentAttachment(string documentId, string fieldApiId, string filename)
+        {
+            using (WebClient webClient = new WebClient())
+            {
+                AddAuthInfo(webClient.Headers);
+
+                webClient.DownloadFile(Config.getDocumentAttachmentUrl(serverUrl, documentId, fieldApiId), filename);
+            }
+        }
     }
 }

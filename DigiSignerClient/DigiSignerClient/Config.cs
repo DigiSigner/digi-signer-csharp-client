@@ -42,5 +42,10 @@
         {
           return getDocumentUrl(server) + SLASH + documentId;
         }
+      
+        public static string getDocumentAttachmentUrl(string server, string documentId, string fieldApiId)
+        {
+          return getDocumentUrl(server) + SLASH + documentId + FIELDS_URL + SLASH + fieldApiId + ATTACHMENT_URL;
+        }
     }
 }
