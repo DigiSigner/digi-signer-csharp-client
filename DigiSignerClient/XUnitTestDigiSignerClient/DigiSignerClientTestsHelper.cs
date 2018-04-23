@@ -146,7 +146,7 @@ namespace DigiSigner.Client.Tests
         {
             foreach (DocumentField documentField in documentFields.Fileds)
             {
-                if (documentField.apiId.Equals(apiId))
+                if (documentField.ApiId.Equals(apiId))
                 {
                     return documentField;
                 }

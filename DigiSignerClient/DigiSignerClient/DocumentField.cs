@@ -12,7 +12,7 @@ namespace DigiSigner.Client
         }
 
         [JsonProperty("api_id")]
-        public string apiId
+        public string ApiId
         {
             get; set;
         }
