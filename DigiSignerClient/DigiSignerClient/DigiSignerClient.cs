@@ -85,7 +85,7 @@ namespace DigiSigner.Client
 
             webRequest.Method = "Post";
            
-            WrireBodyRequest(
+            WriteBodyRequest(
                 webRequest,
                 JsonConvert.SerializeObject(new DocumentContent(signatures), Formatting.Indented)
             );
@@ -153,7 +153,7 @@ namespace DigiSigner.Client
 
             webRequest.Method = "Post";
 
-            WrireBodyRequest(
+            WriteBodyRequest(
                 webRequest,
                 JsonConvert.SerializeObject(signatureRequest, Formatting.Indented)
             );
@@ -163,7 +163,7 @@ namespace DigiSigner.Client
             );
         }
 
-        private void WrireBodyRequest(HttpWebRequest request, string json)
+        private void WriteBodyRequest(HttpWebRequest request, string json)
         {
             byte[] buffer = Encoding.ASCII.GetBytes(json);
 
