@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 
 namespace DigiSigner.Client
@@ -20,6 +21,7 @@ namespace DigiSigner.Client
         }
 
         [JsonProperty("type")]
+        [JsonConverter(typeof(StringEnumConverter))]
         public FieldType Type
         {
             get; set;
