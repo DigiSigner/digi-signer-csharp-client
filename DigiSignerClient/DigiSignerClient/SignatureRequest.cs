@@ -8,6 +8,8 @@ namespace DigiSigner.Client
     {
         public SignatureRequest()
         {
+            SendEmails = true;
+            Embedded = false;
             UseTextTags = false;
             HideTextTags = false;
             SendDocumentsAsBundle = false;
