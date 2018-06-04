@@ -6,7 +6,7 @@ using Xunit;
 
 namespace DigiSigner.Client.Tests
 {
-    public class SignatureRequestForTemplateFullTests : DigiSignerClientTestsHelper
+    public class SignatureRequestForTemplateSimpleTests : DigiSignerClientTestsHelper
     {
         private Dictionary<string, object> existingField1 = new Dictionary<string, object>
         {
@@ -45,12 +45,11 @@ namespace DigiSigner.Client.Tests
         };
 
         /*
-         * Test sending signature request for template.
+         * Test sending signature simple request for template.
          * Curl example:
          * {"documents" : [
          * {"document_id": "6586b79c-60a9-4986-a96d-2b8841cfb567",
-         * "title": "Sample title", "subject": "Sample subject", "message": "Sample message",
-         * "signers": [{"email": "signer_1@example.com"},{"email": "signer_2@example.com"}]}]}
+         * "signers": [{"email": "signer_1@example.com"}]}]}
          */
         [Fact]
         public void SendSignatureRequestForTemplateTest()
@@ -61,18 +60,10 @@ namespace DigiSigner.Client.Tests
 
             Document document = new Document();
             document.ID = idOfTheTemplate;
-            document.Title = documentValues["title"];
-            document.Subject = documentValues["subject"];
-            document.Message = documentValues["message"];
 
-            Signer signer1 = new Signer(signers["signer1"]["email"]);
-            signer1.Order = 1;
+            Signer signer = new Signer(signers["signer1"]["email"]);
 
-            Signer signer2 = new Signer(signers["signer2"]["email"]);
-            signer2.Order = 2;
-
-            document.Signers.Add(signer1);
-            document.Signers.Add(signer2);
+            document.Signers.Add(signer);
             signatureRequest.Documents.Add(document);
 
             // execute signature request
@@ -95,9 +86,6 @@ namespace DigiSigner.Client.Tests
          * {"documents" : [
          * {
          *   "document_id": "79fbdbc7-dbac-424d-8e2e-507ea4ebb53f",
-         *   "title": "Sample title", 
-         *   "subject": "Sample subject", 
-         *   "message": "Sample message",
          *   "signers": [
          *     {
          *       "email": "signer_1@example.com",
@@ -116,25 +104,7 @@ namespace DigiSigner.Client.Tests
          *            "required": true, 
          *            "read_only": false 
          *          }
-         *      ]},
-         *      {
-         *        "email": "signer_2@example.com", 
-         *        "role": "Manager", 
-         *        "existing_fields": [
-         *          {
-         *            "api_id": "b96211e4-08bc-4d6d-8498-30a991ff39f3", 
-         *            "content": "Mary Brown",
-         *            "label": "Please sign", 
-         *            "required": true, 
-         *            "read_only": false
-         *          },
-         *          {
-         *            "api_id": "5ac9c8c5-4f4d-4a1b-b2e1-4eb07f9f579f", 
-         *            "content": "Mary Brown", 
-         *            "label": "Your name",
-         *            "required": false, 
-         *            "read_only": false
-         *          }]}]}]}
+         *      ]}]}]}
          */
         [Fact]
         public void SendSignatureRequestWithExistingFieldsForTemplateTest()
@@ -145,14 +115,11 @@ namespace DigiSigner.Client.Tests
 
             Document document = new Document(relativePathToFileOfTheDocument);
             document.ID = idOfTheDocumentWithFileds;
-            document.Title = documentValues["title"];
-            document.Subject = documentValues["subject"];
-            document.Message = documentValues["message"];
-
+            
             // add first signer
-            Signer signer1 = new Signer(signers["signer1"]["email"]);
-            signer1.Role = "Employee";
-            signer1.Order = 1;
+            Signer signer = new Signer(signers["signer1"]["email"]);
+            signer.Role = "Employee";
+            signer.Order = 1;
 
             // add field for first signer
             ExistingField field1 = new ExistingField((string)existingField1["fieldId"]);
@@ -160,7 +127,7 @@ namespace DigiSigner.Client.Tests
             field1.Label = (string)existingField1["label"];
             field1.Required = (bool)existingField1["required"];
             field1.ReadOnly = (bool)existingField1["readonly"];
-            signer1.ExistingFields.Add(field1);
+            signer.ExistingFields.Add(field1);
 
             // add second field to first signer
             ExistingField field2 = new ExistingField((string)existingField2["fieldId"]);
@@ -168,31 +135,9 @@ namespace DigiSigner.Client.Tests
             field2.Label = (string)existingField2["label"];
             field2.Required = (bool)existingField2["required"];
             field2.ReadOnly = (bool)existingField2["readonly"];
-            signer1.ExistingFields.Add(field2);
+            signer.ExistingFields.Add(field2);
 
-            // add second signer
-            Signer signer2 = new Signer(signers["signer2"]["email"]);
-            signer2.Role = "Manager";
-            signer2.Order = 2;
-
-            // add field for second signer
-            ExistingField field3 = new ExistingField((string)existingField3["fieldId"]);
-            field3.Content = (string)existingField3["content"];
-            field3.Label = (string)existingField3["label"];
-            field3.Required = (bool)existingField3["required"];
-            field3.ReadOnly = (bool)existingField3["readonly"];
-            signer2.ExistingFields.Add(field3);
-
-            // add second field to second signer
-            ExistingField field4 = new ExistingField((string)existingField4["fieldId"]);
-            field4.Content = (string)existingField4["content"];
-            field4.Label = (string)existingField4["label"];
-            field4.Required = (bool)existingField4["required"];
-            field4.ReadOnly = (bool)existingField4["readonly"];
-            signer2.ExistingFields.Add(field4);
-
-            document.Signers.Add(signer1);
-            document.Signers.Add(signer2);
+            document.Signers.Add(signer);
             signatureRequest.Documents.Add(document);
 
             // execute signature request
