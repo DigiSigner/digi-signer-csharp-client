@@ -26,24 +26,6 @@ namespace DigiSigner.Client.Tests
             {"readonly", false }
         };
 
-        private Dictionary<string, object> existingField3 = new Dictionary<string, object>
-        {
-            {"fieldId",  "585a5230-eb43-4574-b8cd-0300249041de"},
-            {"content",  "Mary Brown"},
-            {"label", "Please sign"},
-            {"required", true },
-            {"readonly", false }
-        };
-
-        private Dictionary<string, object> existingField4 = new Dictionary<string, object>
-        {
-            {"fieldId",  "5fa4b24b-2775-4276-a1c5-8a6b0af58931"},
-            {"content",  "Mary Brown"},
-            {"label", "Your name"},
-            {"required", false },
-            {"readonly", false }
-        };
-
         /*
          * Test sending signature simple request for template.
          * Curl example:
