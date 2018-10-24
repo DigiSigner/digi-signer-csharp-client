@@ -53,7 +53,7 @@ namespace DigiSigner.Client
 
             AddAuthInfo(webRequest.Headers);
 
-            webRequest.Method = "Delete";
+            webRequest.Method = "DELETE";
             webRequest.GetResponse();
         }
 
@@ -83,7 +83,7 @@ namespace DigiSigner.Client
 
             AddAuthInfo(webRequest.Headers);
 
-            webRequest.Method = "Post";
+            webRequest.Method = "POST";
            
             WrireBodyRequest(
                 webRequest,
@@ -104,7 +104,7 @@ namespace DigiSigner.Client
 
             AddAuthInfo(webRequest.Headers);
 
-            webRequest.Method = "Get";
+            webRequest.Method = "GET";
 
             return ReadFieldsFromBody<DocumentFields>(
                 webRequest.GetResponse()
@@ -125,7 +125,7 @@ namespace DigiSigner.Client
 
             AddAuthInfo(webRequest.Headers);
 
-            webRequest.Method = "Get";
+            webRequest.Method = "GET";
 
             return ReadFieldsFromBody<SignatureRequest>(
                 webRequest.GetResponse()
@@ -151,7 +151,7 @@ namespace DigiSigner.Client
 
             AddAuthInfo(webRequest.Headers);
 
-            webRequest.Method = "Post";
+            webRequest.Method = "POST";
 
             WrireBodyRequest(
                 webRequest,
