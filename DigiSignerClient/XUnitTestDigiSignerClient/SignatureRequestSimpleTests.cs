@@ -38,6 +38,47 @@ namespace DigiSigner.Client.Tests
             ValidateSignatureRequest(signatureRequest, createdSignatureRequest, true);
         }
 
+        /*
+         * Tests simple send signature request with branding info.
+         * Curl example:
+         * {"branding": {
+         * "reply_to_email": "peter.rogers@digisigner.com",
+         * "email_from_field": "Your company"
+         * },
+         * {"documents" : [
+         * {"document_id": "06c4d320-d6c5-492b-b343-8482338ef9d0",
+         * "signers": [*{"email": "signer_1@example.com"}]}],
+         }
+         */
+        [Fact]
+        public void SendSignatureRequestWithBrandingTest()
+        {
+            // build signature request
+            SignatureRequest signatureRequest = new SignatureRequest();
+            signatureRequest.SendEmails = false;
+
+            // add document from file and one signer
+            Document document = new Document(relativePathToFileOfTheDocument);
+            document.Signers.Add(new Signer(signers["signer1"]["email"]));
+            signatureRequest.Documents.Add(document);
+
+            // add branding info
+            signatureRequest.branding.EmailFromField = "Your company";
+            signatureRequest.branding.ReplyToEmail = "peter.rogers@digisigner.com";
+
+            // execute signature request
+            DigiSignerClient client = new DigiSignerClient(apiId);
+            SignatureRequest signatureRequestResponse = client.SendSignatureRequest(signatureRequest);
+
+            // validate signature request response
+            ValidateResponse(signatureRequest, signatureRequestResponse, true);
+
+            // get and validate signature request from database
+            string signatureRequestId = signatureRequestResponse.SignatureRequestId;
+            SignatureRequest createdSignatureRequest = client.GetSignatureRequest(signatureRequestId);
+
+            ValidateSignatureRequest(signatureRequest, createdSignatureRequest, true);
+        }
 
         /*
          * Test to send signature request with fields.

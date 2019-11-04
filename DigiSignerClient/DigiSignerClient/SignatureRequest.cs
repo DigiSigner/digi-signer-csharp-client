@@ -14,6 +14,7 @@ namespace DigiSigner.Client
             HideTextTags = false;
             SendDocumentsAsBundle = false;
             Documents = new List<Document>();
+            Branding = new Branding();
         }
 
         [JsonProperty("signature_request_id")]
@@ -96,6 +97,12 @@ namespace DigiSigner.Client
 
         [JsonProperty("documents")]
         public List<Document> Documents
+        {
+            get; set;
+        }
+
+        [JsonProperty("branding")]
+        public Branding branding
         {
             get; set;
         }
