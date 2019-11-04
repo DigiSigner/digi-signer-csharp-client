@@ -102,7 +102,7 @@ namespace DigiSigner.Client
         }
 
         [JsonProperty("branding")]
-        public Branding branding
+        public Branding Branding
         {
             get; set;
         }

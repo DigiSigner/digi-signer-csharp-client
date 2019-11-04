@@ -63,8 +63,8 @@ namespace DigiSigner.Client.Tests
             signatureRequest.Documents.Add(document);
 
             // add branding info
-            signatureRequest.branding.EmailFromField = "Your company";
-            signatureRequest.branding.ReplyToEmail = "peter.rogers@digisigner.com";
+            signatureRequest.Branding.EmailFromField = "Your company";
+            signatureRequest.Branding.ReplyToEmail = "peter.rogers@digisigner.com";
 
             // execute signature request
             DigiSignerClient client = new DigiSignerClient(apiId);
