@@ -2,7 +2,7 @@
 {
     public class Config
     {
-        public const string DEFAULT_SERVER_URL = "https://digisigner.com/online/api";
+        public const string DEFAULT_SERVER_URL = "https://api.digisigner.com";
 
         private const string VERSION = "/v1";
         private const string DOCUMENTS_URL = "/documents";
